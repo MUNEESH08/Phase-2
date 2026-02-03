@@ -14,27 +14,19 @@ app = Flask(__name__)
 def extract_text_from_image(image_bytes):
     try:
         response = requests.post(
-            "https://api.ocr.space/parse/image",
+            "https://tesseract-kappa.onrender.com/tesseract-kappa/mytrained",
             files={"file": ("image.png", image_bytes)},
-            data={
-                "apikey": "K89919669988957",
-                "language": "eng"
-            },
             timeout=30
         )
 
-        result = response.json()
+        if response.status_code != 200:
+            return f"OCR API Error: {response.text}"
 
-        if result.get("IsErroredOnProcessing"):
-            return result.get("ErrorMessage", ["OCR failed"])[0]
-
-        parsed = result.get("ParsedResults")
-        return parsed[0]["ParsedText"].strip() if parsed else "No text detected"
+        data = response.json()
+        return data.get("extracted_text", "No text detected")
 
     except Exception as e:
         return f"OCR Exception: {e}"
-
-
 # ==========================
 # COHERE SUMMARY
 # ==========================
@@ -146,4 +138,5 @@ def audio_ta():
 
 
 if __name__ == "__main__":
+
     app.run(debug=True)
